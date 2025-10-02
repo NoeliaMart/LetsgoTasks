@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="NortConsultingTasks.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="BBDD" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SBODemoES</Value>
+    </Setting>
+    <Setting Name="DbProviderFactory" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">System.Data.SqlClient</Value>
+    </Setting>
+    <Setting Name="PwdBBDD" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">eMqCNiBrwXQ=</Value>
+    </Setting>
+    <Setting Name="ServerIP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">127.0.0.1</Value>
+    </Setting>
+    <Setting Name="UserBBDD" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">sa</Value>
+    </Setting>
+    <Setting Name="UserSAP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">manager</Value>
+    </Setting>
+    <Setting Name="PwdSAP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Idu4FbXMR8dGBwA71+UPiQ==</Value>
+    </Setting>
+    <Setting Name="SLDServer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">127.0.0.1</Value>
+    </Setting>
+    <Setting Name="ServerSAP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">vmsap10</Value>
+    </Setting>
+    <Setting Name="ReportFactura" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DriverCR" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
+</SettingsFile>
