@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NortConsultingTasks.Utils
+namespace LetsGoTasks.Utils
 {
     public static class EncryptionHelper
     {
@@ -14,7 +14,7 @@ namespace NortConsultingTasks.Utils
             {
                 string ToReturn = "";
                 string publickey = "87654321";  // Clave pública (8 bytes)
-                string secretkey = "nortCsb1";  // Clave secreta (8 bytes)
+                string secretkey = "letsGob1";  // Clave secreta (8 bytes)
 
                 byte[] privatekeyByte = Encoding.UTF8.GetBytes(secretkey);
                 byte[] publickeybyte = Encoding.UTF8.GetBytes(publickey);
@@ -55,7 +55,7 @@ namespace NortConsultingTasks.Utils
             {
                 string ToReturn = "";
                 string publickey = "87654321";  // Clave pública (8 bytes)
-                string secretkey = "nortCsb1";  // Clave secreta (8 bytes)
+                string secretkey = "letsGob1";  // Clave secreta (8 bytes)
 
                 byte[] privatekeyByte = Encoding.UTF8.GetBytes(secretkey);
                 byte[] publickeybyte = Encoding.UTF8.GetBytes(publickey);

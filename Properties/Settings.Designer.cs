@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NortConsultingTasks.Properties {
+namespace LetsGoTasks.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -25,15 +25,6 @@ namespace NortConsultingTasks.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("SBODemoES")]
-        public string BBDD {
-            get {
-                return ((string)(this["BBDD"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("System.Data.SqlClient")]
         public string DbProviderFactory {
             get {
@@ -43,7 +34,7 @@ namespace NortConsultingTasks.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("eMqCNiBrwXQ=")]
+        [global::System.Configuration.DefaultSettingValueAttribute("T6oo88Wm04E=")]
         public string PwdBBDD {
             get {
                 return ((string)(this["PwdBBDD"]));
@@ -79,7 +70,7 @@ namespace NortConsultingTasks.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Idu4FbXMR8dGBwA71+UPiQ==")]
+        [global::System.Configuration.DefaultSettingValueAttribute("WojV7LAKLcAlWHR3swwRNA==")]
         public string PwdSAP {
             get {
                 return ((string)(this["PwdSAP"]));
@@ -106,28 +97,73 @@ namespace NortConsultingTasks.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ReportFactura {
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Desarrollo\\LetsGoTasks\\bin\\Debug\\Ficheros")]
+        public string CSVProvFolder {
             get {
-                return ((string)(this["ReportFactura"]));
+                return ((string)(this["CSVProvFolder"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string DriverCR {
+        [global::System.Configuration.DefaultSettingValueAttribute(@"CIF, PROVEEDOR, TIPO_VIA, CALLE, NUM_CALLE, CIUDAD, PROVINCIA, CODIGO_POSTAL, PAIS, FORMA_PAGO, CardType, NUM_FRA, FECHA_FACTURA, VTO_OC, TaxDate, CUENTA_ANALITICA, BASE, MONEDA, COD_IVA, DESCRIPCION, OBSERVACIONES, LINEA_DE_OC, COD_Ocs, COD_PROYECTO, PLAZA, ARCHIVO_ADJUNTO, COD_RET, MES_IMPUTACION")]
+        public string CSVProvColumns {
             get {
-                return ((string)(this["DriverCR"]));
+                return ((string)(this["CSVProvColumns"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string CC {
+        [global::System.Configuration.DefaultSettingValueAttribute("20.82.105.88")]
+        public string SFTPHost {
             get {
-                return ((string)(this["CC"]));
+                return ((string)(this["SFTPHost"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("22")]
+        public int SFTPPort {
+            get {
+                return ((int)(this["SFTPPort"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("powerbi")]
+        public string SFTPUser {
+            get {
+                return ((string)(this["SFTPUser"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("HGn5IUcWZcBdpee+GedAY+ZkR8BK0fvo")]
+        public string SFTPPassword {
+            get {
+                return ((string)(this["SFTPPassword"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("/home/powerbi/data/SAP")]
+        public string SFTPFolder {
+            get {
+                return ((string)(this["SFTPFolder"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Desarrollo\\LetsGoTasks\\bin\\Debug\\Logs")]
+        public string LogFolder {
+            get {
+                return ((string)(this["LogFolder"]));
             }
         }
     }

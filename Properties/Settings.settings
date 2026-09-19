@@ -1,15 +1,12 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="NortConsultingTasks.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="LetsGoTasks.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="BBDD" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">SBODemoES</Value>
-    </Setting>
     <Setting Name="DbProviderFactory" Type="System.String" Scope="Application">
       <Value Profile="(Default)">System.Data.SqlClient</Value>
     </Setting>
     <Setting Name="PwdBBDD" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">eMqCNiBrwXQ=</Value>
+      <Value Profile="(Default)">T6oo88Wm04E=</Value>
     </Setting>
     <Setting Name="ServerIP" Type="System.String" Scope="Application">
       <Value Profile="(Default)">127.0.0.1</Value>
@@ -21,7 +18,7 @@
       <Value Profile="(Default)">manager</Value>
     </Setting>
     <Setting Name="PwdSAP" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Idu4FbXMR8dGBwA71+UPiQ==</Value>
+      <Value Profile="(Default)">WojV7LAKLcAlWHR3swwRNA==</Value>
     </Setting>
     <Setting Name="SLDServer" Type="System.String" Scope="Application">
       <Value Profile="(Default)">127.0.0.1</Value>
@@ -29,14 +26,29 @@
     <Setting Name="ServerSAP" Type="System.String" Scope="Application">
       <Value Profile="(Default)">vmsap10</Value>
     </Setting>
-    <Setting Name="ReportFactura" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+    <Setting Name="CSVProvFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Desarrollo\LetsGoTasks\bin\Debug\Ficheros</Value>
     </Setting>
-    <Setting Name="DriverCR" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+    <Setting Name="CSVProvColumns" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CIF, PROVEEDOR, TIPO_VIA, CALLE, NUM_CALLE, CIUDAD, PROVINCIA, CODIGO_POSTAL, PAIS, FORMA_PAGO, CardType, NUM_FRA, FECHA_FACTURA, VTO_OC, TaxDate, CUENTA_ANALITICA, BASE, MONEDA, COD_IVA, DESCRIPCION, OBSERVACIONES, LINEA_DE_OC, COD_Ocs, COD_PROYECTO, PLAZA, ARCHIVO_ADJUNTO, COD_RET, MES_IMPUTACION</Value>
     </Setting>
-    <Setting Name="CC" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+    <Setting Name="SFTPHost" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">20.82.105.88</Value>
+    </Setting>
+    <Setting Name="SFTPPort" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">22</Value>
+    </Setting>
+    <Setting Name="SFTPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">powerbi</Value>
+    </Setting>
+    <Setting Name="SFTPPassword" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">HGn5IUcWZcBdpee+GedAY+ZkR8BK0fvo</Value>
+    </Setting>
+    <Setting Name="SFTPFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/home/powerbi/data/SAP</Value>
+    </Setting>
+    <Setting Name="LogFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Desarrollo\LetsGoTasks\bin\Debug\Logs</Value>
     </Setting>
   </Settings>
 </SettingsFile>

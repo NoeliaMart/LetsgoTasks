@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace NortConsultingTasks.Utils
+namespace LetsGoTasks.Utils
 {
     public class cUtils
     {

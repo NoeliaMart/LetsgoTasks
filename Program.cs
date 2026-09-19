@@ -1,17 +1,14 @@
 ﻿using System;
-using NLog;
-using NortConsultingTasks.Tasks;
-using NortConsultingTasks.Utils;
+using LetsGoTasks.Tasks;
+using LetsGoTasks.Utils;
 
-namespace NortConsultingTasks
+namespace LetsGoTasks
 {
     class Program
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-
         static void Main(string[] args)
         {
-            logger.Info("Application started.");
+            Log.Info("Main", "Application started.");
 
             try
             {
@@ -25,12 +22,15 @@ namespace NortConsultingTasks
                 switch (command.ToUpper())
                 {
                     case "ENCRIPTA":
-                        Console.WriteLine(NortConsultingTasks.Utils.EncryptionHelper.EncryptPass(args[1]));
+                        Console.WriteLine(LetsGoTasks.Utils.EncryptionHelper.EncryptPass(args[1]));
+                        Console.WriteLine("Pulsa una tecla para continuar...");
+                        Console.ReadKey();
                         break;
                     case "TESTCONEXIONBBDD":
                         try
                         {
-                            cBBDD.SetDbConnection();
+
+                            cBBDD.SetDbConnection(args[1]);
                             Console.WriteLine("Conexión correcta");
                         }
                         catch (Exception ex)
@@ -38,12 +38,14 @@ namespace NortConsultingTasks
                             Console.WriteLine("Error realizando conexion: " + ex.Message);
                         }
 
+                        Console.WriteLine("Pulsa una tecla para continuar...");
+                        Console.ReadKey();
                         break;
                     case "TESTCONEXIONSAP":
                         try
                         {
                             string err = string.Empty;
-                            cDIAPI.ConnectionCompany();
+                            cDIAPI.ConnectionCompany(args[1]);
 
                             if (string.IsNullOrEmpty(err))
                             {
@@ -61,18 +63,19 @@ namespace NortConsultingTasks
                             Console.WriteLine("Error realizando conexion: " + ex.Message);
                         }
 
+                        Console.WriteLine("Pulsa una tecla para continuar...");
+                        Console.ReadKey();
                         break;
-                    case "MARGENHW":
-                        ActualizaMargenes.Ejecuta(logger);
+                    case "CSVPROVEEDORES":
+                        ProcesaCargaFacturas.Ejecuta();
                         break;
-                    case "CONTACTOS":
-                        GeneraPersonasContacto.Ejecuta(logger);
+                    case "CREACAMPOS":
+                        CreaCampos.Ejecuta(args[1]);
+                        Console.WriteLine("Pulsa una tecla para continuar...");
+                        Console.ReadKey();
                         break;
-                    case "ENVIAVENCI":
-                        EnvioVencimientos.Ejecuta(logger);
-                        break;
-                    case "CREACAMPO":
-                        CreaCampos.Ejecuta(logger);
+                    case "DESCARGASFTP":
+                        DescargaFicherosSFTP.Ejecuta();
                         break;
                     default:
                         break;
@@ -81,11 +84,6 @@ namespace NortConsultingTasks
             catch (Exception ex)
             {
                 Console.WriteLine("Error :" + ex.Message);
-                logger.Error(ex, "An unexpected error occurred.");
-            }
-            finally
-            {
-                logger.Info("Application ended.");
             }
         }
     }

@@ -3,7 +3,7 @@ using System.Data;
 using System;
 using System.Configuration;
 
-namespace NortConsultingTasks.Utils
+namespace LetsGoTasks.Utils
 {
     public class cBBDD
     {
@@ -11,11 +11,10 @@ namespace NortConsultingTasks.Utils
         {
             return System.Data.Common.DbProviderFactories.GetFactory(bbddType);
         }
-        public static DbConnection SetDbConnection()
+        public static DbConnection SetDbConnection(string companyDB)
         {
             DbConnection connection;
             string serverIP = Properties.Settings.Default.ServerIP;
-            string BBDD = Properties.Settings.Default.BBDD;
             string userName = Properties.Settings.Default.UserBBDD;
             string Passw =  EncryptionHelper.DecryptPass(Properties.Settings.Default.PwdBBDD);
             string connStr;
@@ -23,9 +22,9 @@ namespace NortConsultingTasks.Utils
 
 
 #if DEBUG
-            connStr = "SERVER=" + serverIP + ";DATABASE=" + BBDD + ";UID=" + userName + ";PWD=" + Passw;
+            connStr = "SERVER=" + serverIP + ";DATABASE=" + companyDB + ";UID=" + userName + ";PWD=" + Passw;
 #else
-            connStr = "Server=" + serverIP + ";UserID=" + userName + ";Password=" + Passw + ";current schema=" + BBDD;
+            connStr = "Server=" + serverIP + ";UserID=" + userName + ";Password=" + Passw + ";current schema=" + companyDB;
 #endif
 
             connection = odbProvider.CreateConnection();
@@ -45,13 +44,13 @@ namespace NortConsultingTasks.Utils
         }
 
 
-        public static object ExecScalarQuery(string sql)
+        public static object ExecScalarQuery(string companyDB, string sql)
         {
             DbConnection connection = null;
 
             try
             {
-                connection = SetDbConnection();
+                connection = SetDbConnection(companyDB);
                 object result;
 
                 if (connection.State != ConnectionState.Open)
@@ -85,13 +84,13 @@ namespace NortConsultingTasks.Utils
 
         }
 
-        public static void ExecNonQuery(string sql, string companyDB = "")
+        public static void ExecNonQuery(string companyDB, string sql)
         {
             DbConnection connection = null;
 
             try
             {
-                connection = SetDbConnection();
+                connection = SetDbConnection(companyDB);
                 if (connection.State != ConnectionState.Open)
                 {
                     connection.Open();
@@ -143,7 +142,7 @@ namespace NortConsultingTasks.Utils
 
         }
 
-        public static DataTable ExecDBQuery(string sql)
+        public static DataTable ExecDBQuery(string companyDB,string sql)
         {
             DbConnection connection = null;
             DbProviderFactory dbProvider;
@@ -152,7 +151,7 @@ namespace NortConsultingTasks.Utils
 
             try
             {
-                connection = SetDbConnection();
+                connection = SetDbConnection(companyDB);
                 dbProvider = SetDbProvider(Properties.Settings.Default.DbProviderFactory);
 
                 using (DbCommand command = connection.CreateCommand())
@@ -185,7 +184,7 @@ namespace NortConsultingTasks.Utils
             return dt;
         }
 
-        public static bool ExisteCampo(string Tablename, string Fieldname)
+        public static bool ExisteCampo(string companyDB, string Tablename, string Fieldname)
         {
             SAPbobsCOM.Recordset oRecordSet = null;
             //cUtilsSAP.GetApplication().SetStatusBarMessage("Actualizando OFs", SAPbouiCOM.BoMessageTime.bmt_Short, false);
@@ -196,10 +195,39 @@ namespace NortConsultingTasks.Utils
 #if DEBUG
                 sql = "select * from CUFD WITH (NOLOCK) where upper(\"TableID\") = '" + Tablename + "' AND upper(\"AliasID\") = '" + Fieldname + "'";
 #else
-                sql = "select * from CUFD where trim(upper(\"TableID\")) = '" + Tablename + "' AND trim(upper(\"AliasID\")) = '" + Fieldname + "'";
+                sql = "select * from CUFD where trim(upper(\"TableID\")) = '" + Tablename + "' AND \"AliasID\" = '" + Fieldname + "'";
 #endif
 
-                System.Data.DataTable dt = cBBDD.ExecDBQuery(sql);
+                System.Data.DataTable dt = cBBDD.ExecDBQuery(companyDB, sql);
+
+                return dt.Rows.Count > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                if (oRecordSet != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(oRecordSet);
+            }
+        }
+
+        public static bool ExisteTabla(string companyDB, string TableName)
+        {
+            SAPbobsCOM.Recordset oRecordSet = null;
+            try
+            {
+                string sql;
+
+#if DEBUG
+                sql = "select * from OUTB WITH (NOLOCK) where upper(\"TableName\") = '" + TableName + "'";
+#else
+                sql = "select * from OUTB where trim(upper(\"TableName\")) = '" + TableName + "'";
+#endif
+
+
+                System.Data.DataTable dt = cBBDD.ExecDBQuery(companyDB,sql);
 
                 return dt.Rows.Count > 0;
             }
