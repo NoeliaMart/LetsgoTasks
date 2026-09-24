@@ -19,12 +19,14 @@ namespace LetsGoTasks.Utils.Models
         public string Address { get; set; }
         public string City { get; set; }
         public string ZipCode { get; set; }
+        public string County { get; set; }
         public string Country { get; set; }
         public string PeymentMethodCode { get; set; }
         public int PayTermsGrpCode { get; set; }
         public string CardType { get; set; }
         public string WTCode { get; set; }
         public string State { get; set; }
+        public string Email { get; set; }
 
         // FACTURA
         public string NumAtCard { get; set; }

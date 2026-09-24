@@ -17,7 +17,7 @@ namespace LetsGoTasks.Tasks
             string password = EncryptionHelper.DecryptPass(Properties.Settings.Default.SFTPPassword);
             string carpetaRemota = Properties.Settings.Default.SFTPFolder;
             string carpetaLocal = Properties.Settings.Default.CSVProvFolder;
-            string destinoRemoto = carpetaRemota.TrimEnd('/') + "/" + "SAP_PROCESADO";
+            string destinoRemoto = carpetaRemota.TrimEnd('/') + "/" + Properties.Settings.Default.SFTPFolderNoProcesado;
 
             var connectionInfo = new PasswordConnectionInfo(host,port,user,password);
 
@@ -48,6 +48,7 @@ namespace LetsGoTasks.Tasks
                     }
 
                     sftp.Disconnect();
+  
                 }
             }
             catch (Exception ex)
@@ -55,5 +56,7 @@ namespace LetsGoTasks.Tasks
                 Log.ErrorFichero("DescargaFicherosSFTP", $"Error descargando ficheros SFTP: {ex.Message}");
             }
         }
+
+    
     }
 }

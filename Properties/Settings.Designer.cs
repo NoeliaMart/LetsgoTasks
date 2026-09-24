@@ -106,7 +106,7 @@ namespace LetsGoTasks.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"CIF, PROVEEDOR, TIPO_VIA, CALLE, NUM_CALLE, CIUDAD, PROVINCIA, CODIGO_POSTAL, PAIS, FORMA_PAGO, CardType, NUM_FRA, FECHA_FACTURA, VTO_OC, TaxDate, CUENTA_ANALITICA, BASE, MONEDA, COD_IVA, DESCRIPCION, OBSERVACIONES, LINEA_DE_OC, COD_Ocs, COD_PROYECTO, PLAZA, ARCHIVO_ADJUNTO, COD_RET, MES_IMPUTACION")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"CIF,PROVEEDOR,EMAIL,TIPO_VIA,CALLE,NUM_CALLE,CIUDAD,PROVINCIA,CODIGO_POSTAL,PAIS,FORMA_PAGO,CardType,NUM_FRA,FECHA_FACTURA,VTO_OC,TaxDate,CUENTA_ANALITICA,BASE,MONEDA,COD_IVA,DESCRIPCION,OBSERVACIONES,LINEA_DE_OC,COD_Ocs,COD_PROYECTO,PLAZA,ARCHIVO_ADJUNTO,COD_RET,MES_IMPUTACION")]
         public string CSVProvColumns {
             get {
                 return ((string)(this["CSVProvColumns"]));
@@ -164,6 +164,33 @@ namespace LetsGoTasks.Properties {
         public string LogFolder {
             get {
                 return ((string)(this["LogFolder"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("SAP_NO_PROCESADO")]
+        public string SFTPFolderNoProcesado {
+            get {
+                return ((string)(this["SFTPFolderNoProcesado"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("SAP_PROCESADO")]
+        public string SFTPFolderProcesado {
+            get {
+                return ((string)(this["SFTPFolderProcesado"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("SAP_ERROR")]
+        public string SFTPFolderError {
+            get {
+                return ((string)(this["SFTPFolderError"]));
             }
         }
     }

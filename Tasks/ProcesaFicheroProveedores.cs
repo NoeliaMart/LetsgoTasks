@@ -13,19 +13,17 @@ namespace LetsGoTasks.Tasks
         public static void Ejecuta()
         {
             string folder = Properties.Settings.Default.CSVProvFolder;
-            string procesados = Path.Combine(folder, "Procesados");
-            string erroneos = Path.Combine(folder, "Erroneos");
 
             foreach (string fichero in Directory.GetFiles(folder, "*.xlsx"))
             {
                 string nombre = Path.GetFileName(fichero);
-                string companyDB = Path.GetFileNameWithoutExtension(fichero).Substring(7, nombre.LastIndexOf('_') - 7);
-                string err = "", cardCode = "";
-                List<string> lErrors = new List<string>();
-                List<int> lDocumentos = new List<int>();
-                List<string> lProv = new List<string>();
-                int docEntry = 0;
+                string companyDB = Path.GetFileNameWithoutExtension(fichero)
+                    .Substring(7, nombre.LastIndexOf('_') - 7);
+
                 SAPbobsCOM.Company company = null;
+                var lErrors = new List<string>();
+                var lDocumentos = new List<int>();
+                var lProv = new List<string>();
 
                 try
                 {
@@ -35,59 +33,80 @@ namespace LetsGoTasks.Tasks
                     if (!registros.Any())
                         throw new Exception("El fichero no contiene registros válidos.");
 
-                    if (company.InTransaction)
-                        company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
-
-                    company.StartTransaction();
-
-                    foreach (var factura in registros.GroupBy(r => new
+                    var grupos = registros.GroupBy(r => new
                     {
                         NumAtCard = string.IsNullOrEmpty(r.NumAtCard) ? r.U_COD_Ocs : r.NumAtCard,
                         r.LicTradNum
-                    }))
-                    {
-                        var r = factura.First();
-                        cardCode = r.CardCode;
+                    }).ToList();
 
-                        if (string.IsNullOrEmpty(cardCode))
+                    // PROVEEDORES SIN TRANSACCIÓN
+                    foreach (var grupo in grupos)
+                    {
+                        var r = grupo.First();
+
+                        if (string.IsNullOrEmpty(r.CardCode))
                         {
+                            string err = "", cardCode = "";
+
                             if (!cDIAPI.CreaProveedor(company, r, ref err, ref cardCode))
                                 lErrors.Add(err);
                             else
+                            {
+                                r.CardCode = cardCode;
                                 lProv.Add(cardCode);
+                            }
                         }
-
-                        if (!cDIAPI.CreaFacturaCompra(company, cardCode, factura.ToList(), ref err, ref docEntry))
-                            lErrors.Add(err);
-                        else
-                            lDocumentos.Add(docEntry);
                     }
 
-                    if (lErrors.Count > 0)
-                    {
-                        foreach (string sError in lErrors)
-                            Log.Error(companyDB, "ProcesaCargaFacturasExcel",sError);
+                    if (lErrors.Any())
+                        throw new Exception("Error creando proveedores.");
 
-                        throw new Exception("Fichero con errores.");
+                    // FACTURAS CON TRANSACCIÓN
+                    company.StartTransaction();
+
+                    foreach (var grupo in grupos)
+                    {
+                        var r = grupo.First();
+                        string err = "";
+                        int docEntry = 0;
+
+                        if (!cDIAPI.CreaFacturaCompra(
+                            company, r.CardCode, grupo.ToList(), ref err, ref docEntry))
+                        {
+                            lErrors.Add(err);
+                            break;
+                        }
+
+                        lDocumentos.Add(docEntry);
+                    }
+
+                    if (lErrors.Any())
+                    {
+                        if (company.InTransaction)
+                            company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
+
+                        foreach (string sError in lErrors)
+                            Log.Error(companyDB, nombre, sError);
+
+
+                        throw new Exception("Error creando facturas.");
                     }
 
                     if (company.InTransaction)
                         company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_Commit);
 
-                    foreach (string sCardCode in lProv)
-                        Log.Info(companyDB, "ProcesaCargaFacturasExcel",
-                            $"Proveedor creado. CardCode: {sCardCode}", sCardCode, "OCRD");
+                    foreach (string cardCode in lProv)
+                        Log.Info(companyDB, nombre, $"Proveedor creado. CardCode: {cardCode}", cardCode, "OCRD");
 
-                    foreach (int idocEntry in lDocumentos)
-                        Log.Info(companyDB, "ProcesaCargaFacturasExcel",
-                            $"Factura creada. Número: {GetDocNum(companyDB, idocEntry)}",
-                            idocEntry.ToString(), "OPCH");
+                    foreach (int docEntry in lDocumentos)
+                        Log.Info(companyDB, nombre,
+                            $"Factura creada. Número: {GetDocNum(companyDB, docEntry)}",
+                            docEntry.ToString(), "OPCH");
 
-                    Directory.CreateDirectory(procesados);
-                    File.Move(fichero, Path.Combine(procesados,
-                        $"{Path.GetFileNameWithoutExtension(nombre)}_{DateTime.Now:yyyyMMdd_HHmmss}{Path.GetExtension(nombre)}"));
+                    cUtils.MoverFicheroSFTP(
+                        fichero, Properties.Settings.Default.SFTPFolderProcesado);
 
-                    Log.Info(companyDB, "ProcesaCargaFacturasExcel", "Fichero procesado correctamente.");
+                    Log.Info(companyDB, nombre, "Fichero procesado correctamente.");
                 }
                 catch (Exception ex)
                 {
@@ -100,35 +119,28 @@ namespace LetsGoTasks.Tasks
                             if (company.InTransaction)
                                 company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
                         }
-                        catch (Exception exRollback)
+                        catch (Exception e)
                         {
                             company.GetLastError(out int code, out string sapError);
-                            mensaje += $" | ERROR ROLLBACK: {code} - {sapError} | {exRollback.Message}";
+                            mensaje += $" | ERROR ROLLBACK: {code} - {sapError} | {e.Message}";
                         }
                     }
 
-                    if (company == null)
-                        Log.ErrorFichero("ProcesaCargaFacturasExcel", mensaje);
-                    else
-                        Log.Error(companyDB, "ProcesaCargaFacturasExcel", mensaje);
+                    Log.Error(companyDB, nombre, mensaje);
 
-                    Directory.CreateDirectory(erroneos);
-                    File.Move(fichero, Path.Combine(erroneos,
-                        $"{Path.GetFileNameWithoutExtension(nombre)}_{DateTime.Now:yyyyMMddHHmmss}{Path.GetExtension(nombre)}"));
+                    cUtils.MoverFicheroSFTP(
+                        fichero, Properties.Settings.Default.SFTPFolderError);
                 }
                 finally
                 {
                     if (company != null)
                     {
-                        if (company.Connected)
-                            company.Disconnect();
-
+                        if (company.Connected) company.Disconnect();
                         System.Runtime.InteropServices.Marshal.ReleaseComObject(company);
                     }
                 }
             }
         }
-
 
         private static List<RegistroFactura> LeerExcel(string companyDB, string fichero)
         {
@@ -136,6 +148,7 @@ namespace LetsGoTasks.Tasks
             string[] campos = Properties.Settings.Default.CSVProvColumns.Split(',').Select(x => x.Trim()).ToArray();
 
             using (var wb = new XLWorkbook(fichero))
+            {
                 foreach (var fila in wb.Worksheet(1).RowsUsed().Skip(1))
                 {
                     var r = new RegistroFactura
@@ -147,18 +160,20 @@ namespace LetsGoTasks.Tasks
                         Address = $"{V(fila, campos, "TIPO_VIA")} {V(fila, campos, "CALLE")} {V(fila, campos, "NUM_CALLE")}".Trim(),
                         City = V(fila, campos, "CIUDAD"),
                         ZipCode = V(fila, campos, "CODIGO_POSTAL"),
+                        County = V(fila, campos, "PROVINCIA"),
                         Country = V(fila, campos, "PAIS"),
+                        Email = V(fila, campos, "EMAIL"),
                         PeymentMethodCode = V(fila, campos, "FORMA_PAGO"),
                         CardType = V(fila, campos, "CardType"),
                         NumAtCard = V(fila, campos, "NUM_FRA"),
-                        DocDate = Fecha(fila, campos, "FECHA_FACTURA"),
+                        DocDate = Fecha(fila, campos, "TaxDate"),
                         DocDueDate = Fecha(fila, campos, "VTO_OC"),
-                        TaxDate = Fecha(fila, campos, "TaxDate"),
+                        TaxDate = Fecha(fila, campos, "FECHA_FACTURA"),
                         AccountCode = V(fila, campos, "CUENTA_ANALITICA"),
-                        LineTotal = double.Parse(V(fila, campos, "BASE")),
+                        LineTotal = double.Parse(V(fila, campos, "BASE").Replace(",", "."), System.Globalization.CultureInfo.InvariantCulture),
                         DocCurrency = V(fila, campos, "MONEDA"),
                         VatGroup = V(fila, campos, "COD_IVA"),
-                        Description = V(fila, campos, "DESCRIPCION")?.Length > 100 ? V(fila, campos, "DESCRIPCION").Substring(0, 100) : V(fila, campos, "DESCRIPCION"),
+                        Description = V(fila, campos, "DESCRIPCION"),
                         U_Observaciones = V(fila, campos, "OBSERVACIONES"),
                         U_Linea_COD_Ocs = V(fila, campos, "LINEA_DE_OC"),
                         U_COD_Ocs = V(fila, campos, "COD_Ocs"),
@@ -170,24 +185,32 @@ namespace LetsGoTasks.Tasks
                         State = V(fila, campos, "PROVINCIA")
                     };
 
+                    if (r.Description?.Length > 100)
+                        r.Description = r.Description.Substring(0, 100);
+
                     ValidarRegistro(r);
                     lista.Add(r);
                 }
+            }
 
             return lista;
         }
 
         private static string V(IXLRow fila, string[] campos, string campo)
         {
-            int pos = Array.FindIndex(campos, x => string.Equals(x.Trim(), campo.Trim(), StringComparison.OrdinalIgnoreCase));
+            int pos = Array.FindIndex(campos,
+                x => string.Equals(x.Trim(), campo.Trim(), StringComparison.OrdinalIgnoreCase));
+
             if (pos < 0) throw new Exception($"El campo {campo} no existe en la configuración del Excel.");
             return fila.Cell(pos + 1).GetString().Trim();
         }
 
-
-        private static DateTime Fecha(IXLRow fila, string[] campos, string campo) =>
-            DateTime.ParseExact(V(fila, campos, campo), "yyyyMMdd",
-                System.Globalization.CultureInfo.InvariantCulture);
+        private static DateTime Fecha(IXLRow fila, string[] campos, string campo)
+        {
+            string valor = V(fila, campos, campo);
+            return DateTime.ParseExact(V(fila, campos, campo), "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture);
+        }
+            
 
         private static void ValidarRegistro(RegistroFactura r)
         {
@@ -210,18 +233,16 @@ namespace LetsGoTasks.Tasks
 
         public static int GetSeries(string companyDB)
         {
-            string sql = $"SELECT \"Series\" FROM NNM1 WHERE \"ObjectCode\" = 2 AND \"DocSubType\" = 'S' AND \"IsManual\" = 'N' AND \"Locked\" = 'N'";
+            string sql = "SELECT \"Series\" FROM NNM1 WHERE \"ObjectCode\" = 2 AND \"DocSubType\" = 'S' AND \"IsManual\" = 'N' AND \"Locked\" = 'N'";
             var dt = cBBDD.ExecDBQuery(companyDB, sql);
             return dt.Rows.Count > 0 ? int.Parse(dt.Rows[0]["Series"].ToString()) : 0;
         }
 
-        public static string GetDocNum(string companyDB, int iDocEntry)
+        public static string GetDocNum(string companyDB, int docEntry)
         {
-            string sql = $"SELECT \"DocNum\" FROM OPCH WHERE \"DocEntry\" = {cBBDD.ToSQL(iDocEntry)}";
+            string sql = $"SELECT \"DocNum\" FROM OPCH WHERE \"DocEntry\" = {cBBDD.ToSQL(docEntry)}";
             var dt = cBBDD.ExecDBQuery(companyDB, sql);
             return dt.Rows.Count > 0 ? dt.Rows[0]["DocNum"].ToString() : "";
         }
-
-
     }
 }

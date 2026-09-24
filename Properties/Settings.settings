@@ -30,7 +30,7 @@
       <Value Profile="(Default)">D:\Desarrollo\LetsGoTasks\bin\Debug\Ficheros</Value>
     </Setting>
     <Setting Name="CSVProvColumns" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">CIF, PROVEEDOR, TIPO_VIA, CALLE, NUM_CALLE, CIUDAD, PROVINCIA, CODIGO_POSTAL, PAIS, FORMA_PAGO, CardType, NUM_FRA, FECHA_FACTURA, VTO_OC, TaxDate, CUENTA_ANALITICA, BASE, MONEDA, COD_IVA, DESCRIPCION, OBSERVACIONES, LINEA_DE_OC, COD_Ocs, COD_PROYECTO, PLAZA, ARCHIVO_ADJUNTO, COD_RET, MES_IMPUTACION</Value>
+      <Value Profile="(Default)">CIF,PROVEEDOR,EMAIL,TIPO_VIA,CALLE,NUM_CALLE,CIUDAD,PROVINCIA,CODIGO_POSTAL,PAIS,FORMA_PAGO,CardType,NUM_FRA,FECHA_FACTURA,VTO_OC,TaxDate,CUENTA_ANALITICA,BASE,MONEDA,COD_IVA,DESCRIPCION,OBSERVACIONES,LINEA_DE_OC,COD_Ocs,COD_PROYECTO,PLAZA,ARCHIVO_ADJUNTO,COD_RET,MES_IMPUTACION</Value>
     </Setting>
     <Setting Name="SFTPHost" Type="System.String" Scope="Application">
       <Value Profile="(Default)">20.82.105.88</Value>
@@ -49,6 +49,15 @@
     </Setting>
     <Setting Name="LogFolder" Type="System.String" Scope="Application">
       <Value Profile="(Default)">D:\Desarrollo\LetsGoTasks\bin\Debug\Logs</Value>
+    </Setting>
+    <Setting Name="SFTPFolderNoProcesado" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SAP_NO_PROCESADO</Value>
+    </Setting>
+    <Setting Name="SFTPFolderProcesado" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SAP_PROCESADO</Value>
+    </Setting>
+    <Setting Name="SFTPFolderError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SAP_ERROR</Value>
     </Setting>
   </Settings>
 </SettingsFile>

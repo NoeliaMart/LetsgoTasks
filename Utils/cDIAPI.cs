@@ -49,11 +49,18 @@ namespace LetsGoTasks.Utils
                 oBP.FederalTaxID = r.LicTradNum;
                 oBP.Series = r.Series;
                 oBP.CardName = r.CardName;
-                oBP.Address = r.Address;
-                oBP.City = r.City;
-                oBP.ZipCode = r.ZipCode;
-                oBP.Country = r.Country;
+
+                oBP.Addresses.SetCurrentLine(0);
+                oBP.Addresses.AddressName = r.CardName;
+                oBP.Addresses.Street = r.Address;
+                oBP.Addresses.City = r.City;
+                oBP.Addresses.ZipCode = r.ZipCode;
+                oBP.Addresses.County = r.County;
+                oBP.Addresses.Country = r.Country;
+                oBP.Addresses.AddressType = SAPbobsCOM.BoAddressType.bo_BillTo;
+
                 oBP.LanguageCode = 23;
+                oBP.EmailAddress = r.Email;
 
                 if (!string.IsNullOrEmpty(r.WTCode))
                 {
