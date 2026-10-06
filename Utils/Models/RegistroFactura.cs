@@ -51,5 +51,7 @@ namespace LetsGoTasks.Utils.Models
         public string CostingCode3 { get; set; }
         public string ProjectCode { get; set; }
         public string Archivo_adjunto { get; set; }
+
+        public int lineaExcel { get; set; }
     }
 }

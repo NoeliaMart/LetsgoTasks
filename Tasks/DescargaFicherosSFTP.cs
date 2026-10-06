@@ -42,9 +42,13 @@ namespace LetsGoTasks.Tasks
 
                         Log.Info("DescargaFicherosSFTP", $"Fichero descargado por SFTP: {fichero.Name}");
 
-                        string ficheroDestinoRemoto = destinoRemoto.TrimEnd('/')+ "/"+ fichero.Name;
+                        //string ficheroDestinoRemoto = destinoRemoto.TrimEnd('/')+ "/"+ fichero.Name;
 
-                        sftp.RenameFile(fichero.FullName, ficheroDestinoRemoto);
+                        //sftp.RenameFile(fichero.FullName, ficheroDestinoRemoto);
+
+                        // Eliminar del SFTP una vez descargado correctamente
+                        sftp.DeleteFile(fichero.FullName);
+
                     }
 
                     sftp.Disconnect();

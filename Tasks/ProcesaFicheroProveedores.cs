@@ -21,9 +21,8 @@ namespace LetsGoTasks.Tasks
                     .Substring(7, nombre.LastIndexOf('_') - 7);
 
                 SAPbobsCOM.Company company = null;
-                var lErrors = new List<string>();
-                var lDocumentos = new List<int>();
-                var lProv = new List<string>();
+                var procesados = new List<RegistroExcel>();
+                var errores = new List<RegistroExcel>();
 
                 try
                 {
@@ -39,72 +38,90 @@ namespace LetsGoTasks.Tasks
                         r.LicTradNum
                     }).ToList();
 
-                    // PROVEEDORES SIN TRANSACCIÓN
                     foreach (var grupo in grupos)
                     {
-                        var r = grupo.First();
-
-                        if (string.IsNullOrEmpty(r.CardCode))
+                        RegistroExcel registro = new RegistroExcel
                         {
-                            string err = "", cardCode = "";
+                            LineasExcel = grupo.Select(x => x.lineaExcel).ToList()
+                        };
 
-                            if (!cDIAPI.CreaProveedor(company, r, ref err, ref cardCode))
-                                lErrors.Add(err);
-                            else
+                        try
+                        {
+                            var r = grupo.First();
+
+                            string err = "";
+                            string cardCode = "";
+                            int docEntry = 0;
+
+                            if (string.IsNullOrEmpty(r.CardCode))
                             {
-                                r.CardCode = cardCode;
-                                lProv.Add(cardCode);
+
+                                if (!cDIAPI.CreaProveedor(company, r, ref err, ref cardCode))
+                                {
+                                    Log.Error(companyDB, nombre, err);
+                                    registro.EsError = true;
+                                }
+                                else
+                                {
+                                    r.CardCode = cardCode;
+                                    registro.EsError = false;
+                                    Log.Info(companyDB, nombre, $"Proveedor creado. CardCode: {cardCode}", cardCode, "OCRD");
+                                }
+                            }
+
+                            if (!registro.EsError)
+                            {
+                                if (!cDIAPI.CreaFacturaCompra(company, r.CardCode, grupo.ToList(), ref err, ref docEntry))
+                                {
+                                    Log.Error(companyDB, nombre, err);
+                                    registro.EsError = true;
+                                }
+                                else
+                                {
+                                    registro.EsError = false;
+                                    Log.Info(companyDB, nombre, $"Factura creada. Número: {GetDocNum(companyDB, docEntry)}", docEntry.ToString(), "OPCH");
+                                }
                             }
                         }
-                    }
-
-                    if (lErrors.Any())
-                        throw new Exception("Error creando proveedores.");
-
-                    // FACTURAS CON TRANSACCIÓN
-                    company.StartTransaction();
-
-                    foreach (var grupo in grupos)
-                    {
-                        var r = grupo.First();
-                        string err = "";
-                        int docEntry = 0;
-
-                        if (!cDIAPI.CreaFacturaCompra(
-                            company, r.CardCode, grupo.ToList(), ref err, ref docEntry))
+                        catch (Exception ex)
                         {
-                            lErrors.Add(err);
-                            break;
+                            string mensaje = ex.Message;
+
+                            Log.Error(companyDB, nombre, mensaje);
+
+                            registro.EsError = true;
                         }
 
-                        lDocumentos.Add(docEntry);
+
+                        if (registro.EsError) errores.Add(registro); else procesados.Add(registro);
                     }
 
-                    if (lErrors.Any())
+
+                    //PROCESAMOS LA LISTA PARA REVISAR SI ES ERROR, MOSTRAR LOS MENSAJES Y MODIFICAR EL FICHERO DE ERROR. SI NO ES ERROR SE EXPORTA A PROCESADOS
+
+
+                    if (!errores.Any())
                     {
-                        if (company.InTransaction)
-                            company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
-
-                        foreach (string sError in lErrors)
-                            Log.Error(companyDB, nombre, sError);
-
-
-                        throw new Exception("Error creando facturas.");
+                        cUtils.MoverFicheroSFTP(fichero, Properties.Settings.Default.SFTPFolderProcesado);
                     }
+                    else
+                    {
+                        if (procesados.Any())
+                        {
+                            string ficheroProcesado = GenerarExcel(fichero,"_PROCESADO", procesados);
 
-                    if (company.InTransaction)
-                        company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_Commit);
+                            cUtils.MoverFicheroSFTP(ficheroProcesado,Properties.Settings.Default.SFTPFolderProcesado, Path.GetFileName(fichero));
+                        }
 
-                    foreach (string cardCode in lProv)
-                        Log.Info(companyDB, nombre, $"Proveedor creado. CardCode: {cardCode}", cardCode, "OCRD");
+                        if (errores.Any())
+                        {
+                            string ficheroError = GenerarExcel( fichero,"_ERROR",errores);
 
-                    foreach (int docEntry in lDocumentos)
-                        Log.Info(companyDB, nombre,
-                            $"Factura creada. Número: {GetDocNum(companyDB, docEntry)}",
-                            docEntry.ToString(), "OPCH");
+                            cUtils.MoverFicheroSFTP(ficheroError, Properties.Settings.Default.SFTPFolderError,Path.GetFileName(fichero));
+                        }
 
-                    cUtils.MoverFicheroSFTP(
-                        fichero, Properties.Settings.Default.SFTPFolderProcesado);
+                        File.Delete(fichero);
+                    }
 
                     Log.Info(companyDB, nombre, "Fichero procesado correctamente.");
                 }
@@ -112,24 +129,9 @@ namespace LetsGoTasks.Tasks
                 {
                     string mensaje = ex.Message;
 
-                    if (company != null)
-                    {
-                        try
-                        {
-                            if (company.InTransaction)
-                                company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
-                        }
-                        catch (Exception e)
-                        {
-                            company.GetLastError(out int code, out string sapError);
-                            mensaje += $" | ERROR ROLLBACK: {code} - {sapError} | {e.Message}";
-                        }
-                    }
-
                     Log.Error(companyDB, nombre, mensaje);
 
-                    cUtils.MoverFicheroSFTP(
-                        fichero, Properties.Settings.Default.SFTPFolderError);
+                    cUtils.MoverFicheroSFTP(fichero, Properties.Settings.Default.SFTPFolderError);
                 }
                 finally
                 {
@@ -182,7 +184,8 @@ namespace LetsGoTasks.Tasks
                         CostingCode2 = V(fila, campos, "MES_IMPUTACION"),
                         Archivo_adjunto = V(fila, campos, "ARCHIVO_ADJUNTO"),
                         WTCode = V(fila, campos, "COD_RET"),
-                        State = V(fila, campos, "PROVINCIA")
+                        State = V(fila, campos, "PROVINCIA"),
+                        lineaExcel = fila.RowNumber()
                     };
 
                     if (r.Description?.Length > 100)
@@ -244,5 +247,40 @@ namespace LetsGoTasks.Tasks
             var dt = cBBDD.ExecDBQuery(companyDB, sql);
             return dt.Rows.Count > 0 ? dt.Rows[0]["DocNum"].ToString() : "";
         }
+
+        private static string GenerarExcel(string ficheroOriginal, string sufijo, List<RegistroExcel> registros)
+        {
+            string ficheroNuevo = Path.Combine(Path.GetDirectoryName(ficheroOriginal), Path.GetFileNameWithoutExtension(ficheroOriginal) + sufijo + ".xlsx");
+
+            File.Copy(ficheroOriginal, ficheroNuevo, true);
+
+            var lineasMantener = registros
+                .SelectMany(x => x.LineasExcel)
+                .ToHashSet();
+
+            using (var wb = new XLWorkbook(ficheroNuevo))
+            {
+                var ws = wb.Worksheet(1);
+
+                foreach (var fila in ws.RowsUsed()
+                    .Where(x => x.RowNumber() > 1 &&
+                                !lineasMantener.Contains(x.RowNumber()))
+                    .OrderByDescending(x => x.RowNumber())
+                    .ToList())
+                {
+                    fila.Delete();
+                }
+
+                wb.Save();
+            }
+
+            return ficheroNuevo;
+        }
+    }
+
+    public class RegistroExcel 
+    { 
+        public List<int> LineasExcel { get; set; } 
+        public bool EsError { get; set; }
     }
 }

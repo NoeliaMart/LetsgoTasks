@@ -59,5 +59,8 @@
     <Setting Name="SFTPFolderError" Type="System.String" Scope="Application">
       <Value Profile="(Default)">SAP_ERROR</Value>
     </Setting>
+    <Setting Name="EmpresasCambioMoneda" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SBODemoES</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

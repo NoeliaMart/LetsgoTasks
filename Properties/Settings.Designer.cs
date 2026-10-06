@@ -193,5 +193,14 @@ namespace LetsGoTasks.Properties {
                 return ((string)(this["SFTPFolderError"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("SBODemoES")]
+        public string EmpresasCambioMoneda {
+            get {
+                return ((string)(this["EmpresasCambioMoneda"]));
+            }
+        }
     }
 }

@@ -77,6 +77,9 @@ namespace LetsGoTasks
                     case "DESCARGASFTP":
                         DescargaFicherosSFTP.Ejecuta();
                         break;
+                    case "ACTUALIZACAMBIO":
+                        ActualizaCambioMoneda.Ejecuta();
+                        break;
                     default:
                         break;
                 }

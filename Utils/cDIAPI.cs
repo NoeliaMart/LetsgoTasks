@@ -49,6 +49,7 @@ namespace LetsGoTasks.Utils
                 oBP.FederalTaxID = r.LicTradNum;
                 oBP.Series = r.Series;
                 oBP.CardName = r.CardName;
+                oBP.Currency = r.DocCurrency;
 
                 oBP.Addresses.SetCurrentLine(0);
                 oBP.Addresses.AddressName = r.CardName;
@@ -99,7 +100,7 @@ namespace LetsGoTasks.Utils
             }
         }
 
-        public static bool CreaFacturaCompra(SAPbobsCOM.Company company,string cardCode,List<RegistroFactura> lineas,ref string err, ref int docEntry)
+        public static bool CreaFacturaCompra(SAPbobsCOM.Company company,string cardCode,List<RegistroFactura> lineas, ref string err, ref int docEntry)
         {
             SAPbobsCOM.Documents oDoc = null;
             bool primera_linea = true;
@@ -181,5 +182,30 @@ namespace LetsGoTasks.Utils
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(oDoc);
             }
         }
+
+
+        public static bool ActualizarMoneda(SAPbobsCOM.Company company, string moneda, double valor, DateTime dia, ref string err)
+        {
+            SAPbobsCOM.SBObob oBob = null;
+            try
+            {
+                oBob = (SAPbobsCOM.SBObob)company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoBridge);
+
+                oBob.SetCurrencyRate(moneda, dia, valor);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                err = ex.Message;
+                return false;
+            }
+            finally
+            {
+                if (oBob != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(oBob);
+            }
+        }
+            
     }
 }

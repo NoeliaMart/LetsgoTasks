@@ -164,6 +164,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
+    <Compile Include="Tasks\ActualizaCambioMoneda.cs" />
     <Compile Include="Tasks\CreaCampos.cs" />
     <Compile Include="Tasks\DescargaFicherosSFTP.cs" />
     <Compile Include="Tasks\ProcesaFicheroProveedores.cs" />
