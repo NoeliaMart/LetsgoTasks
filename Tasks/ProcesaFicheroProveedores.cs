@@ -17,8 +17,8 @@ namespace LetsGoTasks.Tasks
             foreach (string fichero in Directory.GetFiles(folder, "*.xlsx"))
             {
                 string nombre = Path.GetFileName(fichero);
-                string companyDB = Path.GetFileNameWithoutExtension(fichero)
-                    .Substring(7, nombre.LastIndexOf('_') - 7);
+                string sinExtension = Path.GetFileNameWithoutExtension(nombre);
+                string companyDB = sinExtension.Substring(sinExtension.IndexOf('_', 3) + 1, sinExtension.LastIndexOf('_') - sinExtension.IndexOf('_', 3) - 1);
 
                 SAPbobsCOM.Company company = null;
                 var procesados = new List<RegistroExcel>();
@@ -53,12 +53,21 @@ namespace LetsGoTasks.Tasks
                             string cardCode = "";
                             int docEntry = 0;
 
-                            if (string.IsNullOrEmpty(r.CardCode))
-                            {
+                            r.CardCode = ExisteProveedor(companyDB, r.LicTradNum);
 
+                            if (string.IsNullOrEmpty(r.LicTradNum))
+                            {
+                                Log.Error(companyDB, nombre, "Error proveedor: NIF Obligatorio");
+                                registro.MsgError = "Error proveedor: NIF Obligatorio";
+                                registro.EsError = true;
+                            }
+                            else if (string.IsNullOrEmpty(r.CardCode))
+                            {
+                                
                                 if (!cDIAPI.CreaProveedor(company, r, ref err, ref cardCode))
                                 {
                                     Log.Error(companyDB, nombre, err);
+                                    registro.MsgError = err;
                                     registro.EsError = true;
                                 }
                                 else
@@ -74,12 +83,14 @@ namespace LetsGoTasks.Tasks
                                 if (!cDIAPI.CreaFacturaCompra(company, r.CardCode, grupo.ToList(), ref err, ref docEntry))
                                 {
                                     Log.Error(companyDB, nombre, err);
+                                    registro.MsgError = err;
                                     registro.EsError = true;
                                 }
                                 else
                                 {
                                     registro.EsError = false;
-                                    Log.Info(companyDB, nombre, $"Factura creada. Número: {GetDocNum(companyDB, docEntry)}", docEntry.ToString(), "OPCH");
+                                    registro.DocNum = GetDocNum(companyDB, docEntry);
+                                    Log.Info(companyDB, nombre, $"Factura creada. Número: {registro.DocNum}", docEntry.ToString(), "OPCH");
                                 }
                             }
                         }
@@ -88,7 +99,7 @@ namespace LetsGoTasks.Tasks
                             string mensaje = ex.Message;
 
                             Log.Error(companyDB, nombre, mensaje);
-
+                            registro.MsgError = mensaje;
                             registro.EsError = true;
                         }
 
@@ -100,28 +111,29 @@ namespace LetsGoTasks.Tasks
                     //PROCESAMOS LA LISTA PARA REVISAR SI ES ERROR, MOSTRAR LOS MENSAJES Y MODIFICAR EL FICHERO DE ERROR. SI NO ES ERROR SE EXPORTA A PROCESADOS
 
 
-                    if (!errores.Any())
-                    {
-                        cUtils.MoverFicheroSFTP(fichero, Properties.Settings.Default.SFTPFolderProcesado);
-                    }
-                    else
-                    {
+                    //if (!errores.Any())
+                    //{
+                    //    string ficheroNuevo = Path.GetFileNameWithoutExtension(fichero) + "_OK" + ".xlsx";
+                    //    cUtils.MoverFicheroSFTP(fichero, Properties.Settings.Default.SFTPFolderProcesado, ficheroNuevo);
+                    //}
+                    //else
+                    //{
                         if (procesados.Any())
                         {
-                            string ficheroProcesado = GenerarExcel(fichero,"_PROCESADO", procesados);
+                            string ficheroProcesado = GenerarExcel(fichero, "_OK", procesados);
 
-                            cUtils.MoverFicheroSFTP(ficheroProcesado,Properties.Settings.Default.SFTPFolderProcesado, Path.GetFileName(fichero));
+                            cUtils.MoverFicheroSFTP(ficheroProcesado,Properties.Settings.Default.SFTPFolderProcesado, Path.GetFileName(ficheroProcesado));
                         }
 
                         if (errores.Any())
                         {
-                            string ficheroError = GenerarExcel( fichero,"_ERROR",errores);
+                            string ficheroError = GenerarExcel( fichero,"_ERROR",errores, true);
 
                             cUtils.MoverFicheroSFTP(ficheroError, Properties.Settings.Default.SFTPFolderError,Path.GetFileName(fichero));
                         }
 
                         File.Delete(fichero);
-                    }
+                    //}
 
                     Log.Info(companyDB, nombre, "Fichero procesado correctamente.");
                 }
@@ -156,7 +168,6 @@ namespace LetsGoTasks.Tasks
                     var r = new RegistroFactura
                     {
                         LicTradNum = V(fila, campos, "CIF"),
-                        CardCode = ExisteProveedor(companyDB, V(fila, campos, "CIF")),
                         Series = GetSeries(companyDB),
                         CardName = V(fila, campos, "PROVEEDOR"),
                         Address = $"{V(fila, campos, "TIPO_VIA")} {V(fila, campos, "CALLE")} {V(fila, campos, "NUM_CALLE")}".Trim(),
@@ -191,7 +202,7 @@ namespace LetsGoTasks.Tasks
                     if (r.Description?.Length > 100)
                         r.Description = r.Description.Substring(0, 100);
 
-                    ValidarRegistro(r);
+                    //ValidarRegistro(r);
                     lista.Add(r);
                 }
             }
@@ -210,13 +221,14 @@ namespace LetsGoTasks.Tasks
 
         private static DateTime Fecha(IXLRow fila, string[] campos, string campo)
         {
-            string valor = V(fila, campos, campo);
-            return DateTime.ParseExact(V(fila, campos, campo), "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture);
+            string value = V(fila, campos, campo);
+            return DateTime.TryParseExact(value, "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime f) ? f : new DateTime(1, 1, 1);
         }
-            
+
 
         private static void ValidarRegistro(RegistroFactura r)
         {
+
             if (r.LicTradNum.Contains(".") || r.LicTradNum.Contains("-"))
                 throw new Exception($"El CIF {r.LicTradNum} contiene caracteres no permitidos.");
 
@@ -248,28 +260,46 @@ namespace LetsGoTasks.Tasks
             return dt.Rows.Count > 0 ? dt.Rows[0]["DocNum"].ToString() : "";
         }
 
-        private static string GenerarExcel(string ficheroOriginal, string sufijo, List<RegistroExcel> registros)
+        private static string GenerarExcel(string ficheroOriginal, string sufijo, List<RegistroExcel> registros, bool ficheroError = false)
         {
             string ficheroNuevo = Path.Combine(Path.GetDirectoryName(ficheroOriginal), Path.GetFileNameWithoutExtension(ficheroOriginal) + sufijo + ".xlsx");
+            string[] campos = Properties.Settings.Default.CSVProvColumns.Split(',').Select(x => x.Trim()).ToArray();
 
             File.Copy(ficheroOriginal, ficheroNuevo, true);
-
-            var lineasMantener = registros
-                .SelectMany(x => x.LineasExcel)
-                .ToHashSet();
 
             using (var wb = new XLWorkbook(ficheroNuevo))
             {
                 var ws = wb.Worksheet(1);
 
-                foreach (var fila in ws.RowsUsed()
-                    .Where(x => x.RowNumber() > 1 &&
-                                !lineasMantener.Contains(x.RowNumber()))
-                    .OrderByDescending(x => x.RowNumber())
-                    .ToList())
+                if (ficheroError)
                 {
-                    fila.Delete();
+                    int colError = Array.FindIndex(campos, c => c.Equals("ERROR", StringComparison.OrdinalIgnoreCase)) + 1;
+                    if (colError == 0) colError = ws.LastColumnUsed().ColumnNumber() + 1;
+
+                    ws.Cell(1, colError).Value = "ERROR";
+
+                    foreach (var registro in registros)
+                        foreach (int linea in registro.LineasExcel)
+                            ws.Cell(linea, colError).Value = registro.MsgError;
                 }
+                else
+                {
+                    int colCodSap = Array.FindIndex(campos, c => c.Equals("COD_SAP", StringComparison.OrdinalIgnoreCase)) + 1;
+                    if (colCodSap == 0) colCodSap = ws.LastColumnUsed().ColumnNumber() + 1;
+
+                    ws.Cell(1, colCodSap).Value = "COD_SAP";
+
+                    foreach (var registro in registros)
+                        foreach (int linea in registro.LineasExcel)
+                            ws.Cell(linea, colCodSap).Value = registro.DocNum;
+                }
+
+                var lineasMantener = registros.SelectMany(x => x.LineasExcel).ToHashSet();
+
+                foreach (var fila in ws.RowsUsed()
+                    .Where(x => x.RowNumber() > 1 && !lineasMantener.Contains(x.RowNumber()))
+                    .OrderByDescending(x => x.RowNumber()).ToList())
+                    fila.Delete();
 
                 wb.Save();
             }
@@ -281,6 +311,8 @@ namespace LetsGoTasks.Tasks
     public class RegistroExcel 
     { 
         public List<int> LineasExcel { get; set; } 
+        public string MsgError { get; set; }
+        public string DocNum { get; set; }
         public bool EsError { get; set; }
     }
 }
