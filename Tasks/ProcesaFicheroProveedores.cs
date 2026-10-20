@@ -20,7 +20,14 @@ namespace LetsGoTasks.Tasks
                 string sinExtension = Path.GetFileNameWithoutExtension(nombre);
                 string companyDB = sinExtension.Substring(sinExtension.IndexOf('_', 3) + 1, sinExtension.LastIndexOf('_') - sinExtension.IndexOf('_', 3) - 1);
 
-                SAPbobsCOM.Company company = null;
+                //AMPLIACION: si la empresa no contiene la tabla LTG_LOG -- SE CREAN LOS CAMPOS
+                if (!cBBDD.ExisteTabla(companyDB, "LTG_LOG"))
+                {
+                    CreaCampos.Ejecuta(companyDB);
+                }
+
+
+                    SAPbobsCOM.Company company = null;
                 var procesados = new List<RegistroExcel>();
                 var errores = new List<RegistroExcel>();
 
@@ -241,7 +248,7 @@ namespace LetsGoTasks.Tasks
 
         public static string ExisteProveedor(string companyDB, string LicTradNum)
         {
-            string sql = $"SELECT \"CardCode\" FROM OCRD WHERE \"CardType\" IN ('S','L') AND \"LicTradNum\" = {cBBDD.ToSQL(LicTradNum)}";
+            string sql = $"SELECT \"CardCode\" FROM OCRD WHERE \"CardType\" IN ('S','L') AND \"LicTradNum\" = {cBBDD.ToSQL(LicTradNum)} AND \"validFor\" = 'Y' ORDER BY \"CardCode\"";
             var dt = cBBDD.ExecDBQuery(companyDB, sql);
             return dt.Rows.Count > 0 ? dt.Rows[0]["CardCode"].ToString() : "";
         }
